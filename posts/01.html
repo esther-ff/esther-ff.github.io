@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="../styles.css">
+        <title>What the Vtable is that?</title>
+    </head>
+
+    <body style="color: white;">
+        <h1>The pains of Async.</h1> <a href="../index.html">Go back!</a><br><br>
+
+        So, let's ask the most sensible question here. What are asynchronous operations?
+        <br>
+        In a very oversimplified sense, they're just operations that are out of order (not-synchronous), like
+        "regular" synchronous operations.
+        <br>
+        In many programming languages, usually it's very simple to handle such stuff, most of the work is done for you
+        by the compiler/interpreter/wizard in your computer/whatever. However in a fancy unknown language known as Rust, 
+        you are left with some nice freedom (with comes with consequences and responsibility!) to build your own runtime.
+        <br><br>
+        However you are provided with several tools, like the Waker, the Context and the Future trait.
+        
+        <h2>What is a waker?</h2>
+        The Rust waker is essentially just a struct with a pointer to some *data* and a pointer to a virtual function table.<br>
+        Seems very generic, however it's purpose is to somehow inform our runtime that it's time to *poll* the task! Of course we could infinitely loop
+        till a Future returned that it's ready, but that is very inefficient. The waker can also be used to create a *Context* which only exists to... provide a waker.
+        <br>
+
+        <h2>Out-of-context context?</h2>
+        The context is a struct roughly containing some data of any time (it's unused private ext field) and a reference to a waker.
+        Currently it only serves as a parameter to the poll function provided by the Future trait.
+
+        <h2>Future trait, is this time travel?</h2>
+        Deceptively, the implementation is simple.
+        <pre class="code-block">
+        use std::task::{Poll, Context};
+        use std::pin::Pin;
+        use std::future::Future;
+
+        impl<T> Future for SomeCoolThing<T> {
+            type Output = T; 
+
+            fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<T> {
+                let mut state = Poll::Pending;
+
+
+                // Some stuff to make it "work".
+                // Maybe change the state to ready?
+                // Maybe save the waker for later?
+                // Haha!
+                state
+            }        
+        }</pre>
+
+        If you noticed, you can see why Rust futures need some executor, they're completely inert.
+        Even async blocks partially "generated" by the compiler, are inert as they're just an opaque type, or in Rust terms
+        <pre class="code-block">
+            fn some_cool_function() -> impl Future&ltOutput = ()&gt // unit type used as example</pre>
+        <h3>So, how does one run a Future?</h3>
+        The key is <code>.await</code> and <code>poll()</code>
+        <br><br>
+        <code>.await</code> just blocks the current thread until the future returns <code>Poll::Ready</code> (and a value inside).
+        Itself <code>.await</code> is implemented using the earlier mentioned function.
+        <br>
+        
+        <h2>Dance, dance, the Carmagnole! (let's make a <b>very</b> simple Future!</h2>
+        Let's make a struct for our dance: <code>Dance</code><br>
+        <pre class="code-block">
+        struct Dance {
+            iterations: u8,
+        }</pre><br>
+        Let's consider that here a "ready" state would be 2 iterations of the dance. Once our dance ends, the Waker will be notified.<br>
+        <pre class="code-block">
+        impl Future for Dance {
+            type Output = (); // Here we have nothing to return.
+            // We will explain the lovely Pin later.
+            // While here it's longer, using Self::Output is nicer for refactoring.
+            fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll&ltSelf::Output&gt {
+                self.iterations += 1;
+
+
+                let state = if self.iterations == 2 {
+                    Poll::Ready(())
+                } else {
+                    cx.waker().wake_by_ref(); // Wake up !
+                    Poll::Pending
+                };
+
+                state
+            }
+        }</pre><br>
+        Running this pretty primitively using just the poll function.
+        <pre class="code-block">
+        fn main() {
+            let mut a = Dance { iterations: 0 };
+            
+            let mut context = Context::from_waker(Waker::noop()); // here our waker has to do nothing
+
+            let mut state = Pin::new(&mut a).poll(&mut context);
+            dbg!(&state);
+
+            state = Pin::new(&mut a).poll(&mut context);
+            dbg!(&state);
+        }</pre><br>
+
+        Which yields us an wonderful result.
+        <pre class="code-block">
+        [src/main.rs:31:5] &state = Pending // first run
+        [src/main.rs:33:5] &state = Ready( // second run
+            (),
+        )</pre><br>
+        This is <b>very</b> primitive and inefficient way to do it (disregards the entire idea of async) but it shows the basic functioning.
+        <h2>Auf wiedersehen!</h2>
+        Here i end this post, i very hope it was nice to read and taught you, the reader something interesting.<br>
+        i'll try to post more.<br><br> And i'll start ripping Tokio apart to learn more and teach(?) more!<br>
+        Goodbye, hope you have a nice day or night!
+    </body>
+
+    <footer class=".page-footer">
+        enjoy your day! work in progress! let the sun shine!
+    </footer>
+</html>

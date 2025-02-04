@@ -1,32 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Place Blanche</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>Esther's bad blog. (!!!)</h1>
+        <h1>Esther's blog. (!!!)</h1>
     </header>
 
     <!-- <nav id="menu">
         <h1>Stuff</h1>
-
         <ul>
-            <li>Jeden</li>
-            <li>Dwa</li>
-            <li>Trzy</li>
-            <li>Cztery</li>
-            <li>Pięć</li>
         </ul>
     </nav>
     -->
 
-    <!--- <nav id="nav1">WIP</nav> -->
+    <!-- <nav id="nav1">WIP</nav> -->
 
     <main>
+        <article id="art2">
+            <header class="article-header">The pains of Async.</header>
+            <section>
+                Well, so i am trying to make a proper executor for Rust futures
+                and to make it "good", i started digging into Tokio source code. This post is a simple description of how asynchronous stuff works in Rust.<br><br>
+
+                <a href="posts/01.html">read</a>
+            </section>
+        </article>
 
         <article id="art1">
             <header class="article-header">The start of my blog, nice!</header>
@@ -35,15 +39,12 @@
                 Well, it has no actual content.<br>
                 Have a good day!
             </section>
-          
-            <footer class="article-footer"><h4>tags: WIP</h4></footer>
+            <!-- <footer class="article-footer"><h4>tags: WIP</h4></footer> -->
         </article>
-
-        
     </main>
 
     <footer class="page-footer">
-        ni dieu, ni maitre
+        ni dieu, ni maitre! work in progress :D
     </footer>
 </body>
 </html>

@@ -2,12 +2,19 @@
     box-sizing: border-box;
 }
 
+html {
+    background-color: #0E0D0D;
+    margin: auto;
+}
+
 body {
     width: 90%;
+    color: #fff;
     margin: 5em auto;
     font-family: 'Courier New', Courier, monospace;
     font-size: 1em;
     line-height: 1.4;
+    background-color: #0E0D0D;
 }
 
 code {
